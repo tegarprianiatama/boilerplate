@@ -11,10 +11,12 @@ import (
 	userRepository "boilerplate/domain/user/repository"
 	userUsecase "boilerplate/domain/user/usecase"
 
+	"boilerplate/shared/cache"
 	jsonResponse "boilerplate/shared/common/json"
 	"boilerplate/shared/config"
 	"boilerplate/shared/database"
 	"boilerplate/shared/logger"
+	"boilerplate/shared/queue"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -60,6 +62,32 @@ func main() {
 		defer sqlDB.Close()
 	}
 
+	// Redis connection
+	if cfg.RedisEnabled {
+		redisClient, err := cache.OpenRedis()
+		if err != nil {
+			log.Fatal("Failed to initialize Redis", zap.Error(err))
+		}
+		defer func() {
+			if err := redisClient.Close(); err != nil {
+				log.Warn("Failed to close Redis connection", zap.Error(err))
+			}
+		}()
+	}
+
+	// RabbitMQ connection
+	if cfg.RabbitMQEnabled {
+		rabbitConn, err := queue.OpenRabbitMQ()
+		if err != nil {
+			log.Fatal("Failed to initialize RabbitMQ", zap.Error(err))
+		}
+		defer func() {
+			if err := rabbitConn.Close(); err != nil {
+				log.Warn("Failed to close RabbitMQ connection", zap.Error(err))
+			}
+		}()
+	}
+
 	e := echo.New()
 	e.Validator = &CustomValidator{validator: validator.New()}
 
@@ -67,7 +95,7 @@ func main() {
 	e.Use(middleware.RequestID())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORS())
-	
+
 	// Zap structured request logging middleware
 	e.Use(func(next echo.HandlerFunc) echo.HandlerFunc {
 		return func(c echo.Context) error {

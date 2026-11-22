@@ -20,6 +20,19 @@ type Config struct {
 	DBSSLMode      string
 	JWTSecret      string
 	JWTExpireHours int
+
+	RedisEnabled  bool
+	RedisHost     string
+	RedisPort     string
+	RedisPassword string
+	RedisDB       int
+
+	RabbitMQEnabled  bool
+	RabbitMQHost     string
+	RabbitMQPort     string
+	RabbitMQUser     string
+	RabbitMQPassword string
+	RabbitMQVHost    string
 }
 
 var globalConfig *Config
@@ -42,6 +55,19 @@ func LoadEnv() *Config {
 		DBSSLMode:      getEnv("DB_SSLMODE", "disable"),
 		JWTSecret:      getEnv("JWT_SECRET", "super-secret-key-change-me"),
 		JWTExpireHours: getEnvAsInt("JWT_EXPIRE_HOURS", 24),
+
+		RedisEnabled:  getEnvAsBool("REDIS_ENABLED", true),
+		RedisHost:     getEnv("REDIS_HOST", "localhost"),
+		RedisPort:     getEnv("REDIS_PORT", "6379"),
+		RedisPassword: getEnv("REDIS_PASSWORD", ""),
+		RedisDB:       getEnvAsInt("REDIS_DB", 0),
+
+		RabbitMQEnabled:  getEnvAsBool("RABBITMQ_ENABLED", true),
+		RabbitMQHost:     getEnv("RABBITMQ_HOST", "localhost"),
+		RabbitMQPort:     getEnv("RABBITMQ_PORT", "5672"),
+		RabbitMQUser:     getEnv("RABBITMQ_USER", "guest"),
+		RabbitMQPassword: getEnv("RABBITMQ_PASSWORD", "guest"),
+		RabbitMQVHost:    getEnv("RABBITMQ_VHOST", "/"),
 	}
 
 	if globalConfig.JWTExpireHours <= 0 {
@@ -68,6 +94,14 @@ func getEnv(key, fallback string) string {
 func getEnvAsInt(key string, fallback int) int {
 	valueStr := getEnv(key, "")
 	if value, err := strconv.Atoi(valueStr); err == nil {
+		return value
+	}
+	return fallback
+}
+
+func getEnvAsBool(key string, fallback bool) bool {
+	valueStr := getEnv(key, "")
+	if value, err := strconv.ParseBool(valueStr); err == nil {
 		return value
 	}
 	return fallback

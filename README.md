@@ -31,7 +31,7 @@ This project strictly follows **Clean Architecture**, dividing responsibilities 
 - **`app/`**: Application bootstrap, dependency injection, middleware setup, and graceful shutdown handling.
 - **`domain/`**: Core business domains containing interfaces, use cases, data repositories, and HTTP delivery handlers.
 - **`model/`**: Shared entities, request DTOs (with struct validation), and response DTOs.
-- **`shared/`**: Common utilities including configuration (`config`), database connections (`database`), migrations (`migration`), structured logging (`logger`), custom error definitions (`errors`), JSON response formatter (`json`), and JWT security middleware (`middleware`).
+- **`shared/`**: Common utilities including configuration (`config`), database connections (`database`), migrations (`migration`), Redis client (`cache`), RabbitMQ client (`queue`), structured logging (`logger`), custom error definitions (`errors`), JSON response formatter (`json`), and JWT security middleware (`middleware`).
 - **`db/migrations/`**: Versioned SQL migration files (`up` and `down`).
 
 ---
@@ -45,6 +45,8 @@ This project strictly follows **Clean Architecture**, dividing responsibilities 
 - **Uber Zap** — Blazing-fast structured JSON/development logging
 - **go-playground/validator** — Request payload validation
 - **golang-jwt/jwt/v5** — JWT authentication middleware
+- **go-redis/v9** — Redis client and connection pooling
+- **rabbitmq/amqp091-go** — RabbitMQ (AMQP 0-9-1) client
 - **Testify** — Unit testing assertion and mocking framework
 
 ---
@@ -70,9 +72,24 @@ DB_SSLMODE=disable
 # JWT Secret Key
 JWT_SECRET=super-secret-key-change-me
 JWT_EXPIRE_HOURS=24
+
+# Redis Configuration
+REDIS_ENABLED=true
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+REDIS_DB=0
+
+# RabbitMQ Configuration
+RABBITMQ_ENABLED=true
+RABBITMQ_HOST=localhost
+RABBITMQ_PORT=5672
+RABBITMQ_USER=guest
+RABBITMQ_PASSWORD=guest
+RABBITMQ_VHOST=/
 ```
 
-*(Note: Set `DB_DRIVER=sqlite3` and `DB_NAME=app.db` to run without PostgreSQL).*
+*(Note: Set `DB_DRIVER=sqlite3` and `DB_NAME=app.db` to run without PostgreSQL. Set `REDIS_ENABLED=false` or `RABBITMQ_ENABLED=false` to skip those connections.)*
 
 ---
 
@@ -83,10 +100,17 @@ JWT_EXPIRE_HOURS=24
 go mod download
 ```
 
-### 2. Run Database Migrations (Optional / Automatic)
+### 2. Start Infrastructure (Optional)
+Spin up PostgreSQL, Redis, and RabbitMQ locally:
+```bash
+docker compose up -d
+```
+RabbitMQ's management UI is available at `http://localhost:15672` (default `guest` / `guest`).
+
+### 3. Run Database Migrations (Optional / Automatic)
 Migrations will run automatically upon startup, or you can manage them manually using `golang-migrate`.
 
-### 3. Run the Server
+### 4. Run the Server
 ```bash
 go run app/main.go
 ```
