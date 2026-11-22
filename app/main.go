@@ -11,6 +11,10 @@ import (
 	userRepository "boilerplate/domain/user/repository"
 	userUsecase "boilerplate/domain/user/usecase"
 
+	authHttpDelivery "boilerplate/domain/auth/delivery/http"
+	authRepository "boilerplate/domain/auth/repository"
+	authUsecase "boilerplate/domain/auth/usecase"
+
 	"boilerplate/shared/cache"
 	jsonResponse "boilerplate/shared/common/json"
 	"boilerplate/shared/config"
@@ -173,6 +177,10 @@ func main() {
 	apiV1 := e.Group("/api/v1")
 
 	// Dependency Injection
+	authRepo := authRepository.NewRepository(db)
+	authUse := authUsecase.NewUsecase(authRepo)
+	authHttpDelivery.AuthHandler(apiV1, authUse, jsonHelper)
+
 	userRepo := userRepository.NewRepository(db)
 	userUse := userUsecase.NewUsecase(userRepo)
 	userHttpDelivery.UserHandler(apiV1, userUse, jsonHelper)

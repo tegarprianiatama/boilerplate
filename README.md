@@ -8,26 +8,6 @@ A robust, production-ready REST API boilerplate with Go, Echo, and GORM followin
 
 This project strictly follows **Clean Architecture**, dividing responsibilities into distinct layers:
 
-```
-┌────────────────────────────────────────────────────────┐
-│                        app/                            │
-│         (Entry Point, DI & Graceful Shutdown)          │
-└───────────────────────────┬────────────────────────────┘
-                            │
-┌───────────────────────────▼────────────────────────────┐
-│                    domain/user/                        │
-│  ┌──────────────────────────────────────────────────┐  │
-│  │  delivery/http/  (Echo Handlers & DTO Binding)   │  │
-│  ├──────────────────────────────────────────────────┤  │
-│  │  usecase/        (Business Logic & Validation)   │  │
-│  ├──────────────────────────────────────────────────┤  │
-│  │  repository/     (GORM Database Operations)      │  │
-│  ├──────────────────────────────────────────────────┤  │
-│  │  interfaces/     (Contract Port Definitions)     │  │
-│  └──────────────────────────────────────────────────┘  │
-└────────────────────────────────────────────────────────┘
-```
-
 - **`app/`**: Application bootstrap, dependency injection, middleware setup, and graceful shutdown handling.
 - **`domain/`**: Core business domains containing interfaces, use cases, data repositories, and HTTP delivery handlers.
 - **`model/`**: Shared entities, request DTOs (with struct validation), and response DTOs.

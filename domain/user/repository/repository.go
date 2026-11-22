@@ -16,19 +16,9 @@ func NewRepository(db *gorm.DB) interfaces.Repository {
 	return &repository{db: db}
 }
 
-func (r *repository) Create(ctx context.Context, user *entity.User) error {
-	return r.db.WithContext(ctx).Create(user).Error
-}
-
 func (r *repository) FindByID(ctx context.Context, id uint) (entity.User, error) {
 	var user entity.User
 	err := r.db.WithContext(ctx).First(&user, id).Error
-	return user, err
-}
-
-func (r *repository) FindByEmail(ctx context.Context, email string) (entity.User, error) {
-	var user entity.User
-	err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error
 	return user, err
 }
 
