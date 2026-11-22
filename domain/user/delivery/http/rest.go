@@ -3,7 +3,9 @@ package http
 import (
 	"boilerplate/domain/user/interfaces"
 	"boilerplate/model/request"
+	ce "boilerplate/shared/common/errors"
 	jsonResp "boilerplate/shared/common/json"
+	"errors"
 	"strconv"
 
 	"github.com/labstack/echo/v4"
@@ -30,6 +32,14 @@ func UserHandler(g *echo.Group, u interfaces.Usecase, j *jsonResp.Response) {
 	}
 }
 
+// Create @Summary Create a new user
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param request body request.CreateUserReq true "Create user payload"
+// @Success 201 {object} jsonResp.APIResponse
+// @Failure 400 {object} jsonResp.APIResponse
+// @Router /users [post]
 func (h *userHandler) Create(c echo.Context) error {
 	var req request.CreateUserReq
 	if err := c.Bind(&req); err != nil {
@@ -41,12 +51,21 @@ func (h *userHandler) Create(c echo.Context) error {
 
 	res, err := h.usecase.Create(c.Request().Context(), req)
 	if err != nil {
-		return h.json.BadRequest(c, err.Error(), err)
+		if errors.Is(err, ce.ErrEmailAlreadyRegistered) {
+			return h.json.BadRequest(c, err.Error(), err)
+		}
+		return h.json.InternalServerError(c, "Failed to create user", err)
 	}
 
 	return h.json.Created(c, "User created successfully", res)
 }
 
+// GetAll @Summary Get all users
+// @Tags users
+// @Produce json
+// @Success 200 {object} jsonResp.APIResponse
+// @Failure 500 {object} jsonResp.APIResponse
+// @Router /users [get]
 func (h *userHandler) GetAll(c echo.Context) error {
 	res, err := h.usecase.GetAll(c.Request().Context())
 	if err != nil {
@@ -55,6 +74,14 @@ func (h *userHandler) GetAll(c echo.Context) error {
 	return h.json.Ok(c, "Users retrieved successfully", res)
 }
 
+// GetByID @Summary Get user by ID
+// @Tags users
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} jsonResp.APIResponse
+// @Failure 400 {object} jsonResp.APIResponse
+// @Failure 404 {object} jsonResp.APIResponse
+// @Router /users/{id} [get]
 func (h *userHandler) GetByID(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := strconv.ParseUint(idParam, 10, 32)
@@ -64,7 +91,7 @@ func (h *userHandler) GetByID(c echo.Context) error {
 
 	res, err := h.usecase.GetByID(c.Request().Context(), uint(id))
 	if err != nil {
-		if err.Error() == "user not found" {
+		if errors.Is(err, ce.ErrUserNotFound) {
 			return h.json.NotFound(c, err.Error())
 		}
 		return h.json.InternalServerError(c, "Failed to retrieve user", err)
@@ -73,6 +100,16 @@ func (h *userHandler) GetByID(c echo.Context) error {
 	return h.json.Ok(c, "User retrieved successfully", res)
 }
 
+// Update @Summary Update user by ID
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param id path int true "User ID"
+// @Param request body request.UpdateUserReq true "Update user payload"
+// @Success 200 {object} jsonResp.APIResponse
+// @Failure 400 {object} jsonResp.APIResponse
+// @Failure 404 {object} jsonResp.APIResponse
+// @Router /users/{id} [put]
 func (h *userHandler) Update(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := strconv.ParseUint(idParam, 10, 32)
@@ -90,7 +127,7 @@ func (h *userHandler) Update(c echo.Context) error {
 
 	res, err := h.usecase.Update(c.Request().Context(), uint(id), req)
 	if err != nil {
-		if err.Error() == "user not found" {
+		if errors.Is(err, ce.ErrUserNotFound) {
 			return h.json.NotFound(c, err.Error())
 		}
 		return h.json.BadRequest(c, err.Error(), err)
@@ -99,6 +136,14 @@ func (h *userHandler) Update(c echo.Context) error {
 	return h.json.Ok(c, "User updated successfully", res)
 }
 
+// Delete @Summary Delete user by ID
+// @Tags users
+// @Produce json
+// @Param id path int true "User ID"
+// @Success 200 {object} jsonResp.APIResponse
+// @Failure 400 {object} jsonResp.APIResponse
+// @Failure 404 {object} jsonResp.APIResponse
+// @Router /users/{id} [delete]
 func (h *userHandler) Delete(c echo.Context) error {
 	idParam := c.Param("id")
 	id, err := strconv.ParseUint(idParam, 10, 32)
@@ -108,7 +153,7 @@ func (h *userHandler) Delete(c echo.Context) error {
 
 	err = h.usecase.Delete(c.Request().Context(), uint(id))
 	if err != nil {
-		if err.Error() == "user not found" {
+		if errors.Is(err, ce.ErrUserNotFound) {
 			return h.json.NotFound(c, err.Error())
 		}
 		return h.json.InternalServerError(c, "Failed to delete user", err)

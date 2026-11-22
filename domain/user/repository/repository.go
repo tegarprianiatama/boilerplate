@@ -5,7 +5,7 @@ import (
 	"boilerplate/model/entity"
 	"context"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type repository struct {
@@ -17,31 +17,31 @@ func NewRepository(db *gorm.DB) interfaces.Repository {
 }
 
 func (r *repository) Create(ctx context.Context, user *entity.User) error {
-	return r.db.Create(user).Error
+	return r.db.WithContext(ctx).Create(user).Error
 }
 
 func (r *repository) FindByID(ctx context.Context, id uint) (entity.User, error) {
 	var user entity.User
-	err := r.db.First(&user, id).Error
+	err := r.db.WithContext(ctx).First(&user, id).Error
 	return user, err
 }
 
 func (r *repository) FindByEmail(ctx context.Context, email string) (entity.User, error) {
 	var user entity.User
-	err := r.db.Where("email = ?", email).First(&user).Error
+	err := r.db.WithContext(ctx).Where("email = ?", email).First(&user).Error
 	return user, err
 }
 
 func (r *repository) FindAll(ctx context.Context) ([]entity.User, error) {
 	var users []entity.User
-	err := r.db.Find(&users).Error
+	err := r.db.WithContext(ctx).Find(&users).Error
 	return users, err
 }
 
 func (r *repository) Update(ctx context.Context, user *entity.User) error {
-	return r.db.Save(user).Error
+	return r.db.WithContext(ctx).Save(user).Error
 }
 
 func (r *repository) Delete(ctx context.Context, id uint) error {
-	return r.db.Delete(&entity.User{}, id).Error
+	return r.db.WithContext(ctx).Delete(&entity.User{}, id).Error
 }

@@ -2,13 +2,14 @@ package usecase
 
 import (
 	"boilerplate/domain/user/interfaces"
+	ce "boilerplate/shared/common/errors"
 	"boilerplate/model/entity"
 	"boilerplate/model/request"
 	"boilerplate/model/response"
 	"context"
 	"errors"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type usecase struct {
@@ -20,10 +21,12 @@ func NewUsecase(repo interfaces.Repository) interfaces.Usecase {
 }
 
 func (u *usecase) Create(ctx context.Context, req request.CreateUserReq) (response.UserResp, error) {
-	// Check email uniqueness
 	existing, err := u.repo.FindByEmail(ctx, req.Email)
 	if err == nil && existing.ID != 0 {
-		return response.UserResp{}, errors.New("email already registered")
+		return response.UserResp{}, ce.ErrEmailAlreadyRegistered
+	}
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		return response.UserResp{}, err
 	}
 
 	user := entity.User{
@@ -43,7 +46,7 @@ func (u *usecase) GetByID(ctx context.Context, id uint) (response.UserResp, erro
 	user, err := u.repo.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return response.UserResp{}, errors.New("user not found")
+			return response.UserResp{}, ce.ErrUserNotFound
 		}
 		return response.UserResp{}, err
 	}
@@ -62,7 +65,7 @@ func (u *usecase) Update(ctx context.Context, id uint, req request.UpdateUserReq
 	user, err := u.repo.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return response.UserResp{}, errors.New("user not found")
+			return response.UserResp{}, ce.ErrUserNotFound
 		}
 		return response.UserResp{}, err
 	}
@@ -85,7 +88,7 @@ func (u *usecase) Delete(ctx context.Context, id uint) error {
 	_, err := u.repo.FindByID(ctx, id)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return errors.New("user not found")
+			return ce.ErrUserNotFound
 		}
 		return err
 	}
