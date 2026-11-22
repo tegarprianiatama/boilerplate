@@ -69,6 +69,7 @@ DB_SSLMODE=disable
 
 # JWT Secret Key
 JWT_SECRET=super-secret-key-change-me
+JWT_EXPIRE_HOURS=24
 ```
 
 *(Note: Set `DB_DRIVER=sqlite3` and `DB_NAME=app.db` to run without PostgreSQL).*

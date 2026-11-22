@@ -53,6 +53,14 @@ func (r *Response) BadRequest(ctx echo.Context, message string, err interface{})
 	})
 }
 
+func (r *Response) Unauthorized(ctx echo.Context, message string) error {
+	return ctx.JSON(http.StatusUnauthorized, APIResponse{
+		Code:    http.StatusUnauthorized,
+		Status:  "UNAUTHORIZED",
+		Message: message,
+	})
+}
+
 func (r *Response) NotFound(ctx echo.Context, message string) error {
 	return ctx.JSON(http.StatusNotFound, APIResponse{
 		Code:    http.StatusNotFound,

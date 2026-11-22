@@ -22,4 +22,5 @@ type Usecase interface {
 	GetAll(ctx context.Context) ([]response.UserResp, error)
 	Update(ctx context.Context, id uint, req request.UpdateUserReq) (response.UserResp, error)
 	Delete(ctx context.Context, id uint) error
+	Login(ctx context.Context, req request.LoginReq) (response.LoginResp, error)
 }

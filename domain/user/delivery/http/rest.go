@@ -5,6 +5,7 @@ import (
 	"boilerplate/model/request"
 	ce "boilerplate/shared/common/errors"
 	jsonResp "boilerplate/shared/common/json"
+	"boilerplate/shared/middleware"
 	"errors"
 	"strconv"
 
@@ -24,12 +25,46 @@ func UserHandler(g *echo.Group, u interfaces.Usecase, j *jsonResp.Response) {
 
 	userGroup := g.Group("/users")
 	{
+		// Public routes
 		userGroup.POST("", h.Create)
-		userGroup.GET("", h.GetAll)
-		userGroup.GET("/:id", h.GetByID)
-		userGroup.PUT("/:id", h.Update)
-		userGroup.DELETE("/:id", h.Delete)
+		userGroup.POST("/login", h.Login)
+
+		// Protected routes
+		protected := userGroup.Group("", middleware.JWTMiddleware())
+		protected.GET("", h.GetAll)
+		protected.GET("/:id", h.GetByID)
+		protected.PUT("/:id", h.Update)
+		protected.DELETE("/:id", h.Delete)
 	}
+}
+
+// Login @Summary Authenticate a user and issue a JWT
+// @Tags users
+// @Accept json
+// @Produce json
+// @Param request body request.LoginReq true "Login credentials"
+// @Success 200 {object} jsonResp.APIResponse
+// @Failure 400 {object} jsonResp.APIResponse
+// @Failure 401 {object} jsonResp.APIResponse
+// @Router /users/login [post]
+func (h *userHandler) Login(c echo.Context) error {
+	var req request.LoginReq
+	if err := c.Bind(&req); err != nil {
+		return h.json.BadRequest(c, "Invalid request payload", err)
+	}
+	if err := c.Validate(&req); err != nil {
+		return h.json.BadRequest(c, "Validation failed", err)
+	}
+
+	res, err := h.usecase.Login(c.Request().Context(), req)
+	if err != nil {
+		if errors.Is(err, ce.ErrInvalidCredentials) {
+			return h.json.Unauthorized(c, err.Error())
+		}
+		return h.json.InternalServerError(c, "Failed to authenticate user", err)
+	}
+
+	return h.json.Ok(c, "Login successful", res)
 }
 
 // Create @Summary Create a new user

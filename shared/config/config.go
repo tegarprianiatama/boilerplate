@@ -9,16 +9,17 @@ import (
 )
 
 type Config struct {
-	AppEnv     string
-	AppPort    string
-	DBDriver   string
-	DBHost     string
-	DBPort     string
-	DBUser     string
-	DBPassword string
-	DBName     string
-	DBSSLMode  string
-	JWTSecret  string
+	AppEnv         string
+	AppPort        string
+	DBDriver       string
+	DBHost         string
+	DBPort         string
+	DBUser         string
+	DBPassword     string
+	DBName         string
+	DBSSLMode      string
+	JWTSecret      string
+	JWTExpireHours int
 }
 
 var globalConfig *Config
@@ -30,16 +31,21 @@ func LoadEnv() *Config {
 	}
 
 	globalConfig = &Config{
-		AppEnv:     getEnv("APP_ENV", "development"),
-		AppPort:    getEnv("APP_PORT", "8080"),
-		DBDriver:   getEnv("DB_DRIVER", "postgres"),
-		DBHost:     getEnv("DB_HOST", "localhost"),
-		DBPort:     getEnv("DB_PORT", "5432"),
-		DBUser:     getEnv("DB_USER", "postgres"),
-		DBPassword: getEnv("DB_PASSWORD", "postgres"),
-		DBName:     getEnv("DB_NAME", "user_db"),
-		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
-		JWTSecret:  getEnv("JWT_SECRET", "super-secret-key-change-me"),
+		AppEnv:         getEnv("APP_ENV", "development"),
+		AppPort:        getEnv("APP_PORT", "8080"),
+		DBDriver:       getEnv("DB_DRIVER", "postgres"),
+		DBHost:         getEnv("DB_HOST", "localhost"),
+		DBPort:         getEnv("DB_PORT", "5432"),
+		DBUser:         getEnv("DB_USER", "postgres"),
+		DBPassword:     getEnv("DB_PASSWORD", "postgres"),
+		DBName:         getEnv("DB_NAME", "user_db"),
+		DBSSLMode:      getEnv("DB_SSLMODE", "disable"),
+		JWTSecret:      getEnv("JWT_SECRET", "super-secret-key-change-me"),
+		JWTExpireHours: getEnvAsInt("JWT_EXPIRE_HOURS", 24),
+	}
+
+	if globalConfig.JWTExpireHours <= 0 {
+		globalConfig.JWTExpireHours = 24
 	}
 
 	return globalConfig
