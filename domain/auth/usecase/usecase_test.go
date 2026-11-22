@@ -1,10 +1,10 @@
 package usecase
 
 import (
-	"boilerplate/model/entity"
-	"boilerplate/model/request"
-	"boilerplate/shared/auth"
-	ce "boilerplate/shared/common/errors"
+	"go-boilerplate/model/entity"
+	"go-boilerplate/model/request"
+	"go-boilerplate/shared/auth"
+	ce "go-boilerplate/shared/common/errors"
 	"context"
 	"testing"
 

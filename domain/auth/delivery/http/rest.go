@@ -1,10 +1,10 @@
 package http
 
 import (
-	"boilerplate/domain/auth/interfaces"
-	"boilerplate/model/request"
-	ce "boilerplate/shared/common/errors"
-	jsonResp "boilerplate/shared/common/json"
+	"go-boilerplate/domain/auth/interfaces"
+	"go-boilerplate/model/request"
+	ce "go-boilerplate/shared/common/errors"
+	jsonResp "go-boilerplate/shared/common/json"
 	"errors"
 
 	"github.com/labstack/echo/v4"

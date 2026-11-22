@@ -1,7 +1,7 @@
 package response
 
 import (
-	"boilerplate/model/entity"
+	"go-boilerplate/model/entity"
 	"time"
 )
 

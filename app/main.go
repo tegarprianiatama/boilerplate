@@ -7,20 +7,20 @@ import (
 	"os/signal"
 	"time"
 
-	userHttpDelivery "boilerplate/domain/user/delivery/http"
-	userRepository "boilerplate/domain/user/repository"
-	userUsecase "boilerplate/domain/user/usecase"
+	userHttpDelivery "go-boilerplate/domain/user/delivery/http"
+	userRepository "go-boilerplate/domain/user/repository"
+	userUsecase "go-boilerplate/domain/user/usecase"
 
-	authHttpDelivery "boilerplate/domain/auth/delivery/http"
-	authRepository "boilerplate/domain/auth/repository"
-	authUsecase "boilerplate/domain/auth/usecase"
+	authHttpDelivery "go-boilerplate/domain/auth/delivery/http"
+	authRepository "go-boilerplate/domain/auth/repository"
+	authUsecase "go-boilerplate/domain/auth/usecase"
 
-	"boilerplate/shared/cache"
-	jsonResponse "boilerplate/shared/common/json"
-	"boilerplate/shared/config"
-	"boilerplate/shared/database"
-	"boilerplate/shared/logger"
-	"boilerplate/shared/queue"
+	"go-boilerplate/shared/cache"
+	jsonResponse "go-boilerplate/shared/common/json"
+	"go-boilerplate/shared/config"
+	"go-boilerplate/shared/database"
+	"go-boilerplate/shared/logger"
+	"go-boilerplate/shared/queue"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
@@ -43,7 +43,7 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 
 // @title Go Clean Architecture Boilerplate API
 // @version 1.0
-// @description REST API boilerplate for User CRUD using Go, Echo, GORM, Redis, and RabbitMQ with Clean Architecture.
+// @description REST API go-boilerplate for User CRUD using Go, Echo, GORM, Redis, and RabbitMQ with Clean Architecture.
 // @host localhost:8080
 // @BasePath /api/v1
 func main() {

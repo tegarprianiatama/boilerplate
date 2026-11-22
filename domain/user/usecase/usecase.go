@@ -1,10 +1,10 @@
 package usecase
 
 import (
-	"boilerplate/domain/user/interfaces"
-	ce "boilerplate/shared/common/errors"
-	"boilerplate/model/request"
-	"boilerplate/model/response"
+	"go-boilerplate/domain/user/interfaces"
+	ce "go-boilerplate/shared/common/errors"
+	"go-boilerplate/model/request"
+	"go-boilerplate/model/response"
 	"context"
 	"errors"
 

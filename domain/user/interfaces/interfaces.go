@@ -1,9 +1,9 @@
 package interfaces
 
 import (
-	"boilerplate/model/entity"
-	"boilerplate/model/request"
-	"boilerplate/model/response"
+	"go-boilerplate/model/entity"
+	"go-boilerplate/model/request"
+	"go-boilerplate/model/response"
 	"context"
 )
 

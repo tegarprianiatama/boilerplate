@@ -1,11 +1,11 @@
 package http
 
 import (
-	"boilerplate/domain/user/interfaces"
-	"boilerplate/model/request"
-	ce "boilerplate/shared/common/errors"
-	jsonResp "boilerplate/shared/common/json"
-	"boilerplate/shared/middleware"
+	"go-boilerplate/domain/user/interfaces"
+	"go-boilerplate/model/request"
+	ce "go-boilerplate/shared/common/errors"
+	jsonResp "go-boilerplate/shared/common/json"
+	"go-boilerplate/shared/middleware"
 	"errors"
 	"strconv"
 

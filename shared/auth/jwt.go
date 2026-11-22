@@ -1,7 +1,7 @@
 package auth
 
 import (
-	"boilerplate/shared/config"
+	"go-boilerplate/shared/config"
 	"strconv"
 	"time"
 

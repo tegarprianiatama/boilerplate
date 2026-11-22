@@ -1,12 +1,12 @@
 package usecase
 
 import (
-	"boilerplate/domain/auth/interfaces"
-	"boilerplate/model/entity"
-	"boilerplate/model/request"
-	"boilerplate/model/response"
-	"boilerplate/shared/auth"
-	ce "boilerplate/shared/common/errors"
+	"go-boilerplate/domain/auth/interfaces"
+	"go-boilerplate/model/entity"
+	"go-boilerplate/model/request"
+	"go-boilerplate/model/response"
+	"go-boilerplate/shared/auth"
+	ce "go-boilerplate/shared/common/errors"
 	"context"
 	"errors"
 

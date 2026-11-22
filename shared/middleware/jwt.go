@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	jsonResp "boilerplate/shared/common/json"
-	"boilerplate/shared/config"
+	jsonResp "go-boilerplate/shared/common/json"
+	"go-boilerplate/shared/config"
 	"strings"
 
 	"github.com/golang-jwt/jwt/v5"

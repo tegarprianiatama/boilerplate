@@ -1,6 +1,6 @@
 # Go Clean Architecture Boilerplate
 
-A robust, production-ready REST API boilerplate with Go, Echo, and GORM following Clean Architecture principles.
+A robust, production-ready REST API go-boilerplate with Go, Echo, and GORM following Clean Architecture principles.
 
 ---
 
@@ -36,7 +36,7 @@ This project strictly follows **Clean Architecture**, dividing responsibilities 
 Create or update your environment configuration in `conf/config.env`:
 
 ```env
-APP_NAME=boilerplate
+APP_NAME=go-boilerplate
 APP_ENV=development
 APP_PORT=8080
 

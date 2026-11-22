@@ -1,8 +1,8 @@
 package cache
 
 import (
-	"boilerplate/shared/config"
-	"boilerplate/shared/logger"
+	"go-boilerplate/shared/config"
+	"go-boilerplate/shared/logger"
 	"context"
 	"fmt"
 	"net"

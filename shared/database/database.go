@@ -1,9 +1,9 @@
 package database
 
 import (
-	"boilerplate/model/entity"
-	"boilerplate/shared/config"
-	"boilerplate/shared/logger"
+	"go-boilerplate/model/entity"
+	"go-boilerplate/shared/config"
+	"go-boilerplate/shared/logger"
 	"fmt"
 
 	"go.uber.org/zap"

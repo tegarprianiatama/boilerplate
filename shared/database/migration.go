@@ -1,8 +1,8 @@
 package database
 
 import (
-	"boilerplate/shared/config"
-	"boilerplate/shared/logger"
+	"go-boilerplate/shared/config"
+	"go-boilerplate/shared/logger"
 	"fmt"
 
 	"github.com/golang-migrate/migrate/v4"

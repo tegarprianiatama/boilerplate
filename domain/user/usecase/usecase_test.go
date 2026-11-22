@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"boilerplate/model/entity"
+	"go-boilerplate/model/entity"
 	"context"
 	"testing"
 	"time"

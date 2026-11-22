@@ -1,8 +1,8 @@
 package repository
 
 import (
-	"boilerplate/domain/auth/interfaces"
-	"boilerplate/model/entity"
+	"go-boilerplate/domain/auth/interfaces"
+	"go-boilerplate/model/entity"
 	"context"
 
 	"gorm.io/gorm"
