@@ -21,6 +21,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	amqp "github.com/rabbitmq/amqp091-go"
+	"github.com/redis/go-redis/v9"
 	"go.uber.org/zap"
 )
 
@@ -37,18 +39,18 @@ func (cv *CustomValidator) Validate(i interface{}) error {
 
 // @title Go Clean Architecture Boilerplate API
 // @version 1.0
-// @description REST API boilerplate for User CRUD using Go, Echo, and GORM with Clean Architecture.
+// @description REST API boilerplate for User CRUD using Go, Echo, GORM, Redis, and RabbitMQ with Clean Architecture.
 // @host localhost:8080
 // @BasePath /api/v1
 func main() {
-	// 7. Type-safe configuration
+	// Type-safe configuration
 	cfg := config.LoadEnv()
 
-	// 4. Structured Logging (Zap)
+	// Structured Logging (Zap)
 	log := logger.InitLogger(cfg.AppEnv)
 	defer logger.Sync()
 
-	// 2. Database Migrations & 1. GORM v2 connection
+	// Database Migrations & GORM v2 connection
 	if err := database.RunMigrations("db/migrations"); err != nil {
 		log.Warn("Golang-migrate encountered an issue or skipped, falling back to GORM AutoMigrate", zap.Error(err))
 	}
@@ -58,34 +60,29 @@ func main() {
 		log.Fatal("Failed to initialize database", zap.Error(err))
 	}
 	sqlDB, err := db.DB()
-	if err == nil {
-		defer sqlDB.Close()
+	if err != nil {
+		log.Fatal("Failed to get underlying sql.DB", zap.Error(err))
 	}
+	defer sqlDB.Close()
 
 	// Redis connection
+	var redisClient *redis.Client
 	if cfg.RedisEnabled {
-		redisClient, err := cache.OpenRedis()
+		redisClient, err = cache.OpenRedis()
 		if err != nil {
 			log.Fatal("Failed to initialize Redis", zap.Error(err))
 		}
-		defer func() {
-			if err := redisClient.Close(); err != nil {
-				log.Warn("Failed to close Redis connection", zap.Error(err))
-			}
-		}()
+		defer redisClient.Close()
 	}
 
 	// RabbitMQ connection
+	var rabbitConn *amqp.Connection
 	if cfg.RabbitMQEnabled {
-		rabbitConn, err := queue.OpenRabbitMQ()
+		rabbitConn, err = queue.OpenRabbitMQ()
 		if err != nil {
 			log.Fatal("Failed to initialize RabbitMQ", zap.Error(err))
 		}
-		defer func() {
-			if err := rabbitConn.Close(); err != nil {
-				log.Warn("Failed to close RabbitMQ connection", zap.Error(err))
-			}
-		}()
+		defer rabbitConn.Close()
 	}
 
 	e := echo.New()
@@ -121,6 +118,57 @@ func main() {
 		return c.String(http.StatusOK, "Welcome to Go Clean Architecture Boilerplate (Production-Ready)")
 	})
 
+	// Health check endpoint
+	e.GET("/health", func(c echo.Context) error {
+		ctx, cancel := context.WithTimeout(c.Request().Context(), 3*time.Second)
+		defer cancel()
+
+		healthStatus := map[string]string{
+			"status":   "ok",
+			"database": "connected",
+		}
+		statusCode := http.StatusOK
+
+		// Check database
+		if err := sqlDB.PingContext(ctx); err != nil {
+			healthStatus["database"] = "disconnected"
+			healthStatus["status"] = "error"
+			statusCode = http.StatusServiceUnavailable
+		}
+
+		// Check Redis if enabled
+		if cfg.RedisEnabled {
+			if redisClient != nil {
+				if err := redisClient.Ping(ctx).Err(); err != nil {
+					healthStatus["redis"] = "disconnected"
+					healthStatus["status"] = "error"
+					statusCode = http.StatusServiceUnavailable
+				} else {
+					healthStatus["redis"] = "connected"
+				}
+			} else {
+				healthStatus["redis"] = "disabled"
+			}
+		}
+
+		// Check RabbitMQ if enabled
+		if cfg.RabbitMQEnabled {
+			if rabbitConn != nil {
+				if rabbitConn.IsClosed() {
+					healthStatus["rabbitmq"] = "disconnected"
+					healthStatus["status"] = "error"
+					statusCode = http.StatusServiceUnavailable
+				} else {
+					healthStatus["rabbitmq"] = "connected"
+				}
+			} else {
+				healthStatus["rabbitmq"] = "disabled"
+			}
+		}
+
+		return c.JSON(statusCode, healthStatus)
+	})
+
 	jsonHelper := jsonResponse.NewResponse()
 	apiV1 := e.Group("/api/v1")
 
@@ -129,7 +177,7 @@ func main() {
 	userUse := userUsecase.NewUsecase(userRepo)
 	userHttpDelivery.UserHandler(apiV1, userUse, jsonHelper)
 
-	// 9. Graceful Shutdown
+	// Graceful Shutdown
 	port := cfg.AppPort
 	go func() {
 		log.Info("Server starting", zap.String("port", port))
@@ -146,9 +194,30 @@ func main() {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	// 1. Shutdown HTTP server first
 	if err := e.Shutdown(ctx); err != nil {
-		log.Fatal("Server forced to shutdown", zap.Error(err))
+		log.Error("Server forced to shutdown", zap.Error(err))
 	}
+
+	// 2. Close RabbitMQ connection
+	if rabbitConn != nil && !rabbitConn.IsClosed() {
+		if err := rabbitConn.Close(); err != nil {
+			log.Warn("Failed to close RabbitMQ connection", zap.Error(err))
+		} else {
+			log.Info("RabbitMQ connection closed successfully")
+		}
+	}
+
+	// 3. Close Redis connection
+	if redisClient != nil {
+		if err := redisClient.Close(); err != nil {
+			log.Warn("Failed to close Redis connection", zap.Error(err))
+		} else {
+			log.Info("Redis connection closed successfully")
+		}
+	}
+
+	// 4. Database connection closed via defer sqlDB.Close()
 
 	log.Info("Server exiting")
 }
