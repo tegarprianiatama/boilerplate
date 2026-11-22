@@ -1,42 +1,101 @@
 # Go Clean Architecture Boilerplate
 
-REST API boilerplate untuk User CRUD menggunakan Go, Echo, dan GORM dengan pola Clean Architecture.
+A robust, production-ready REST API boilerplate with Go, Echo, and GORM following Clean Architecture principles.
+
+---
+
+## Architecture Overview
+
+This project strictly follows **Clean Architecture**, dividing responsibilities into distinct layers:
+
+```
+┌────────────────────────────────────────────────────────┐
+│                        app/                            │
+│         (Entry Point, DI & Graceful Shutdown)          │
+└───────────────────────────┬────────────────────────────┘
+                            │
+┌───────────────────────────▼────────────────────────────┐
+│                    domain/user/                        │
+│  ┌──────────────────────────────────────────────────┐  │
+│  │  delivery/http/  (Echo Handlers & DTO Binding)   │  │
+│  ├──────────────────────────────────────────────────┤  │
+│  │  usecase/        (Business Logic & Validation)   │  │
+│  ├──────────────────────────────────────────────────┤  │
+│  │  repository/     (GORM Database Operations)      │  │
+│  ├──────────────────────────────────────────────────┤  │
+│  │  interfaces/     (Contract Port Definitions)     │  │
+│  └──────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────┘
+```
+
+- **`app/`**: Application bootstrap, dependency injection, middleware setup, and graceful shutdown handling.
+- **`domain/`**: Core business domains containing interfaces, use cases, data repositories, and HTTP delivery handlers.
+- **`model/`**: Shared entities, request DTOs (with struct validation), and response DTOs.
+- **`shared/`**: Common utilities including configuration (`config`), database connections (`database`), migrations (`migration`), structured logging (`logger`), custom error definitions (`errors`), JSON response formatter (`json`), and JWT security middleware (`middleware`).
+- **`db/migrations/`**: Versioned SQL migration files (`up` and `down`).
+
+---
 
 ## Tech Stack
 
-- **Go 1.24**
-- **Echo v4** — HTTP framework
-- **GORM** — ORM (PostgreSQL / SQLite)
-- **validator** — validasi request
-- **godotenv** — load config env
+- **Go 1.25+**
+- **Echo v4** — High-performance web framework
+- **GORM v2** — Advanced ORM (`gorm.io/gorm` with PostgreSQL and SQLite support)
+- **golang-migrate** — Robust database schema migrations
+- **Uber Zap** — Blazing-fast structured JSON/development logging
+- **go-playground/validator** — Request payload validation
+- **golang-jwt/jwt/v5** — JWT authentication middleware
+- **Testify** — Unit testing assertion and mocking framework
 
-## Struktur Proyek
+---
 
+## Configuration
+
+Create or update your environment configuration in `conf/config.env`:
+
+```env
+APP_NAME=boilerplate
+APP_ENV=development
+APP_PORT=8080
+
+# Database Configuration (PostgreSQL / SQLite)
+DB_DRIVER=postgres
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=user_db
+DB_SSLMODE=disable
+
+# JWT Secret Key
+JWT_SECRET=super-secret-key-change-me
 ```
-app/                  → entry point & dependency injection
-conf/                 → file konfigurasi (config.env)
-domain/user/          → domain user (interfaces, usecase, repository, handler HTTP)
-model/                → entity, request DTO, response DTO
-shared/               → config, database, helper response JSON
-```
 
-## Cara Menjalankan
+*(Note: Set `DB_DRIVER=sqlite3` and `DB_NAME=app.db` to run without PostgreSQL).*
 
+---
+
+## Getting Started
+
+### 1. Install Dependencies
 ```bash
-# 1. Install dependency
 go mod download
-
-# 2. Sesuaikan konfigurasi database di conf/config.env
-#    (set DB_DRIVER=sqlite3 untuk jalan tanpa PostgreSQL)
-
-# 3. Jalankan server
-make run
 ```
 
-Server berjalan di `http://localhost:8080`.
+### 2. Run Database Migrations (Optional / Automatic)
+Migrations will run automatically upon startup, or you can manage them manually using `golang-migrate`.
 
-Menjalankan test:
-
+### 3. Run the Server
 ```bash
-make test
+go run app/main.go
+```
+The server will start at `http://localhost:8080`.
+
+---
+
+## Testing
+
+Run all unit tests with verbose output:
+```bash
+go test -v ./...
 ```
